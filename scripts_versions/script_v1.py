@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Float, text
 
-DOWNLOAD_DIR = os.path.abspath("tmp")
+DOWNLOAD_DIR = os.path.abspath("../tmp")
 
 
 def clean_tmp_folder():
