@@ -47,14 +47,14 @@ def setup_driver():
 
 def download_csv(base_driver, url, new_filename='data.csv'):
     '''Загружаем csv файл'''
-    wait = WebDriverWait(base_driver, 15)
+    wait = WebDriverWait(base_driver, 5)
     base_driver.get(url)
 
     first_button = wait.until(EC.element_to_be_clickable((By.ID, "x-auto-30")))
     first_button.click()
     print("Первый шаг выполнен")
 
-    download_button = WebDriverWait(base_driver, 10).until(
+    download_button = WebDriverWait(base_driver, 1).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, "div.cc-but#x-auto-104 button"))
     )
     download_button.click()
