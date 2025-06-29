@@ -1,10 +1,12 @@
 import os
+import pyperclip
 import time
 import glob
 import pandas as pd
 from params.parametrs import username, password, localhost
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -25,12 +27,11 @@ def clean_tmp_folder():
             print(f"{f}: не найден")
 
 
-def setup_driver():
+def setup_search_driver():
+    '''Первый драйвер для прохода по кнопкам'''
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
-    options.add_argument("--headless=new")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
     prefs = {
         "download.default_directory": DOWNLOAD_DIR,
@@ -43,17 +44,164 @@ def setup_driver():
     return webdriver.Chrome(service=service, options=options)
 
 
-def download_csv(driver, url, new_filename='data.csv'):
-    '''=Прокладываем путь до csv-файла='''
-    wait = WebDriverWait(driver, 15)
+def setup_driver():
+    '''Второй драйвер для скачивания csv'''
+    options = webdriver.ChromeOptions()
+    options.add_argument("--start-maximized")
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")  # Рекомендуется для стабильности в Windows
+    options.add_argument("--window-size=1920,1080")  # Для корректного рендера страниц в headless
 
-    driver.get(url)
+    prefs = {
+        "download.default_directory": DOWNLOAD_DIR,
+        "download.prompt_for_download": False,
+        "safebrowsing.enabled": True
+    }
+    options.add_experimental_option("prefs", prefs)
+
+    service = Service(ChromeDriverManager().install())
+    return webdriver.Chrome(service=service, options=options)
+
+
+def get_updated_url(search_driver, base_url):
+    """Открытие страницы, клики по фильтрам, копирование новой ссылки"""
+    wait = WebDriverWait(search_driver, 20)
+    search_driver.get(base_url)
+
+    try:
+        triangle = wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//td[@class='ctb']/img[contains(@style, 'tree_collapsed')]"))
+        )
+        triangle.click()
+        print("Первая кнопка нажата")
+        time.sleep(1)
+
+        # 2. Нажатие на элемент с текстом 'Индекс физического объема...'
+        index_element = wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//span[contains(., 'Индекс физического объема оборота розничной торговли')]"))
+        )
+        index_element.click()
+        print("Вторая кнопка нажата")
+        time.sleep(1)
+
+        # 3. Нажатие на вкладку 'Таблица'
+        table_tab = wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//span[contains(@class, 'x-tab-strip-text') and contains(., 'Таблица')]"))
+        )
+        table_tab.click()
+        print("Третья кнопка нажата")
+        print("Проходимся по остальным элементам")
+        time.sleep(3)
+
+        actions = ActionChains(search_driver)
+        actions.move_by_offset(504, 196).click().perform()
+        # Обязательно вернуть курсор в 0,0, иначе последующие клики будут смещены
+        actions.move_by_offset(-504, -196).perform()
+        time.sleep(1.5)
+
+        actions.move_by_offset(460, 220).click().perform()
+        actions.move_by_offset(-460, -220).perform()
+        time.sleep(2)
+
+        actions.move_by_offset(457, 270).click().perform()
+        actions.move_by_offset(-457, -270).perform()  # вернуть мышь снова в (0, 0)
+        time.sleep(3)
+
+        ok_button = WebDriverWait(search_driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[normalize-space(text())='OK']"))
+        )
+        ok_button.click()
+        print("Кнопка OK нажата")
+        time.sleep(2)
+
+        actions.move_by_offset(587, 192).click().perform()
+        actions.move_by_offset(-587, -192).perform()  # вернуть мышь снова в (0, 0)
+        time.sleep(3)
+
+        actions.move_by_offset(534, 222).click().perform()
+        actions.move_by_offset(-534, -222).perform()
+        time.sleep(2)
+
+        actions.move_by_offset(534, 344).click().perform()
+        actions.move_by_offset(-534, -344).perform()
+
+        ok_button = WebDriverWait(search_driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='OK']"))
+        )
+        ok_button.click()
+        print("Кнопка OK нажата")
+        time.sleep(3)
+
+        actions.move_by_offset(705, 193).click().perform()
+        actions.move_by_offset(-705, -193).perform()
+        time.sleep(3)
+
+        actions.move_by_offset(621, 221).click().perform()
+        actions.move_by_offset(-621, -221).perform()
+        time.sleep(3)
+
+        actions.move_by_offset(621, 287).click().perform()
+        actions.move_by_offset(-621, -287).perform()
+        time.sleep(1.5)
+
+        ok_button = WebDriverWait(search_driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='OK']"))
+        )
+        ok_button.click()
+        print("Кнопка OK нажата")
+        time.sleep(3)
+
+        actions.move_by_offset(411, 376).click().perform()
+        actions.move_by_offset(-411, -376).perform()
+        time.sleep(1.5)
+
+        actions.move_by_offset(220, 403).click().perform()
+        actions.move_by_offset(-220, -403).perform()
+        time.sleep(3)
+
+        actions.move_by_offset(220, 450).click().perform()
+        actions.move_by_offset(-220, -450).perform()
+        time.sleep(3)
+
+        ok_button = WebDriverWait(search_driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='OK']"))
+        )
+        ok_button.click()
+        print("Кнопка OK нажата")
+
+        time.sleep(5)
+
+        button = search_driver.find_element(By.XPATH, "//div[@id='x-auto-197']//span[contains(@class, 'mapinfo')]")
+        button.click()
+        print("Кнопка троеточия нажата")
+        time.sleep(5)
+
+        button = search_driver.find_element(By.XPATH, "//div[@id='x-auto-432' and contains(text(), 'Скопировать ссылку')]")
+        button.click()
+        ("Кнопка OK нажата")
+        time.sleep(5)
+
+        new_url = pyperclip.paste()
+        print(f"Новый URL: {new_url}")
+        return new_url
+        search_driver.quit()
+
+    except Exception as e:
+        print(f"Ошибка при нажатии элементов: {e}")
+
+
+
+def download_csv(base_driver, new_url, new_filename='data.csv'):
+    wait = WebDriverWait(base_driver, 15)
+    base_driver.get(new_url)
 
     first_button = wait.until(EC.element_to_be_clickable((By.ID, "x-auto-30")))
     first_button.click()
     print("First step")
 
-    download_button = WebDriverWait(driver, 10).until(
+    download_button = WebDriverWait(base_driver, 10).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, "div.cc-but#x-auto-104 button"))
     )
     download_button.click()
@@ -85,8 +233,6 @@ def download_csv(driver, url, new_filename='data.csv'):
         time.sleep(1)
 
     raise FileNotFoundError("CSV не был найден после тайм-аута")
-
-
 
 def process_and_overwrite_csv(file_path):
     '''=Корректируем csv-файл при помощи pandas-а и перезаписываем='''
@@ -222,20 +368,31 @@ def load_csv_to_db(csv_path, username, password, localhost, port=5432, db_name='
 
 
 def main():
-
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     clean_tmp_folder()
 
     try:
-        driver = setup_driver()
-        url = 'https://bi.gks.ru/biportal/contourbi.jsp?project=%2FDashboard%2Ftrade&report=_1102_%D0%98%D0%BD%D0%B4_%D1%84%D0%B8%D0%B7_%D0%BE%D0%B1%D1%8C%D0%B5%D0%BC%D0%B0_-_%D0%92%D0%B8%D1%82%D0%B0&toolbar=off&slice=slice1&view=view1'
-        file_path = download_csv(driver, url, new_filename="data.csv")
+        search_driver = setup_search_driver()
+        base_driver = setup_driver()
+        base_url = 'https://bi.gks.ru/biportal/contourbi.jsp?allsol=1&solution=Dashboard&project=%2FDashboard%2Ftrade'
+
+        # Получаем новый URL через действия на странице
+        new_url = get_updated_url(search_driver, base_url)
+        search_driver.quit()
+        if not new_url:
+            raise Exception("Не удалось получить новый URL")
+
+        # Скачиваем CSV по новому URL
+        file_path = download_csv(base_driver, new_url, new_filename="data.csv")
+
+        # Обработка и загрузка
         process_and_overwrite_csv(file_path)
         load_csv_to_db(file_path, username, password, localhost)
+
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"❌ Ошибка: {e}")
     finally:
-        driver.quit()
+        base_driver.quit()
 
 
 if __name__ == "__main__":
