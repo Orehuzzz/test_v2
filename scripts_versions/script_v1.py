@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Float, text
 
-DOWNLOAD_DIR = os.path.abspath("../tmp")
+DOWNLOAD_DIR = os.path.abspath("tmp")
 
 
 def clean_tmp_folder():
@@ -31,8 +31,8 @@ def setup_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--scripts_versions-maximized")
     options.add_argument("--headless")
-    options.add_argument("--disable-gpu")  # Рекомендуется для стабильности в Windows
-    options.add_argument("--window-size=1920,1080")  # Для корректного рендера страниц в headless
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
 
     prefs = {
         "download.default_directory": DOWNLOAD_DIR,
