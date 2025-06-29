@@ -383,7 +383,7 @@ def main():
             raise Exception("Не удалось получить новый URL")
 
         # Скачиваем CSV по новому URL
-        file_path = download_csv(base_driver, new_url, new_filename="tmp/data.csv")
+        file_path = download_csv(base_driver, new_url, new_filename="../tmp/data.csv")
 
         # Обработка и загрузка
         process_and_overwrite_csv(file_path)
