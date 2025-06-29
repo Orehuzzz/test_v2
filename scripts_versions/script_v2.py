@@ -54,7 +54,7 @@ def download_csv(base_driver, url, new_filename='data.csv'):
     first_button.click()
     print("Первый шаг выполнен")
 
-    download_button = WebDriverWait(base_driver, 5).until(
+    download_button = WebDriverWait(base_driver, 1).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, "div.cc-but#x-auto-104 button"))
     )
     download_button.click()
