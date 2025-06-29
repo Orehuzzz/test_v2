@@ -18,7 +18,7 @@ DOWNLOAD_DIR = os.path.abspath("")
 
 def clean_tmp_folder():
     '''Удаляем предыдущий файл из папки, чтобы не возникало конфликтов'''
-    files = glob.glob(os.path.join(DOWNLOAD_DIR, "data*.csv"))
+    files = glob.glob(os.path.join(DOWNLOAD_DIR, r"tmp\data*.csv"))
     for f in files:
         try:
             os.remove(f)
@@ -32,7 +32,7 @@ def setup_search_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--scripts_versions-maximized")
     options.add_argument("--disable-blink-features=AutomationControlled")
-
+    options.add_argument("--window-size=1920,1080")
     prefs = {
         "download.default_directory": DOWNLOAD_DIR,
         "download.prompt_for_download": False,
@@ -61,6 +61,13 @@ def setup_driver():
 
     service = Service(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=options)
+
+
+def wait_and_click(search_driver, xpath, timeout=15):
+    """Универсальный клик с ожиданием"""
+    WebDriverWait(search_driver, timeout).until(
+        EC.element_to_be_clickable((By.XPATH, xpath))
+    ).click()
 
 
 def get_updated_url(search_driver, base_url):
@@ -192,8 +199,7 @@ def get_updated_url(search_driver, base_url):
         print(f"Ошибка при нажатии элементов: {e}")
 
 
-
-def download_csv(base_driver, new_url, new_filename='data.csv'):
+def download_csv(base_driver, new_url, new_filename='tmp\data.csv'):
     wait = WebDriverWait(base_driver, 15)
     base_driver.get(new_url)
 
@@ -223,7 +229,7 @@ def download_csv(base_driver, new_url, new_filename='data.csv'):
             if os.path.exists(new_path):
                 # Добавим суффикс времени
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
-                new_path = os.path.join(DOWNLOAD_DIR, f"data_{timestamp}.csv")
+                new_path = os.path.join(DOWNLOAD_DIR, f"tmp\data_{timestamp}.csv")
 
             os.rename(latest_file, new_path)
             print(f"Файл: {new_path} установлен")
@@ -383,14 +389,14 @@ def main():
             raise Exception("Не удалось получить новый URL")
 
         # Скачиваем CSV по новому URL
-        file_path = download_csv(base_driver, new_url, new_filename="../tmp/data.csv")
+        file_path = download_csv(base_driver, new_url, new_filename="tmp/data.csv")
 
         # Обработка и загрузка
         process_and_overwrite_csv(file_path)
         load_csv_to_db(file_path, username, password, localhost)
 
     except Exception as e:
-        print(f"❌ Ошибка: {e}")
+        print(f"Ошибка: {e}")
     finally:
         base_driver.quit()
 
