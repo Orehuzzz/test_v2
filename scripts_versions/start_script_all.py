@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Float, text
 
-DOWNLOAD_DIR = os.path.abspath("tmp")
+DOWNLOAD_DIR = os.path.abspath("")
 
 
 def clean_tmp_folder():
@@ -30,7 +30,7 @@ def clean_tmp_folder():
 def setup_search_driver():
     '''Первый драйвер для прохода по кнопкам'''
     options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
+    options.add_argument("--scripts_versions-maximized")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
     prefs = {
@@ -47,7 +47,7 @@ def setup_search_driver():
 def setup_driver():
     '''Второй драйвер для скачивания csv'''
     options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
+    options.add_argument("--scripts_versions-maximized")
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")  # Рекомендуется для стабильности в Windows
     options.add_argument("--window-size=1920,1080")  # Для корректного рендера страниц в headless
@@ -383,7 +383,7 @@ def main():
             raise Exception("Не удалось получить новый URL")
 
         # Скачиваем CSV по новому URL
-        file_path = download_csv(base_driver, new_url, new_filename="data.csv")
+        file_path = download_csv(base_driver, new_url, new_filename="tmp/data.csv")
 
         # Обработка и загрузка
         process_and_overwrite_csv(file_path)
